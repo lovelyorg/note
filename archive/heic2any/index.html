@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HEIC to jpeg/png/....</title>
+  </head>
+  <body>
+    <input id="file" type="file" onchange="changeHandler(event)" style="display: block;" />
+    <div id="errormsg"></div>
+    <img id="img" style="max-width: 1000px;" />
+  </body>
+  <script src="./node_modules/heic2any/dist/heic2any.js"></script>
+  <script>
+    function changeHandler(ev) {
+      img.src = './loading.gif'
+      file.style.display = 'none'
+      errormsg.innerHTML = ''
+      errormsg.style.display = 'none'
+      var blob = ev.target.files[0]
+      console.log(ev)
+      heic2any({
+        blob: blob,
+        toType: 'image/jpeg',
+      })
+        .then(function (resultBlob) {
+          console.log(resultBlob)
+          // find a way to convert a blob to a file (use File constructor)
+          console.log('file', new File([resultBlob], 'test.jpg', { type: 'image/jpeg' }))
+          fileOrBlobToDataURL(resultBlob, (m) => {
+            img.src = m.target.result
+          })
+          file.style.display = 'unset'
+        })
+        .catch(function (x) {
+          img.src = ''
+          file.style.display = 'unset'
+          errormsg.style.display = 'block'
+          errormsg.innerHTML = 'Error code: <code>' + x.code + '</code> ' + x.message
+        })
+    }
+
+    function fileOrBlobToDataURL(obj, cb) {
+      var a = new FileReader()
+      a.readAsDataURL(obj)
+      a.onload = cb
+    }
+  </script>
+</html>

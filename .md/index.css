@@ -1,0 +1,63 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: #fdfdfd;
+}
+
+#app {
+  display: flex;
+  height: 100%;
+}
+
+.list {
+  margin: 0;
+  padding-left: 16px;
+  cursor: pointer;
+  overflow-x: hidden;
+  word-break: break-all;
+}
+
+.list-container {
+  background-color: #f7f7f7;
+  margin: 0;
+  overflow-y: auto;
+  min-width: 248px;
+  max-width: 248px;
+}
+
+.list-cate-block {
+  padding: 0 16px;
+}
+
+.list-cate-block-cate {
+  font-size: 1.1rem;
+}
+
+.list .item {
+  margin: 12px 0;
+  color: #3d7e9a;
+}
+
+.list .item:hover {
+  text-decoration: underline;
+}
+
+.view {
+  flex: auto;
+  border: 0px;
+  overflow: auto;
+  padding: 0 12px;
+}
+
+.view > :first-child {
+  margin-top: 0.875em;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}

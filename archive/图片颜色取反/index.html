@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+      body {
+        margin: 0px;
+        background: #f2f2f0;
+      }
+      p {
+        margin: 0px;
+      }
+      .file {
+        position: absolute;
+        width: 100%;
+        font-size: 40px;
+      }
+      .filebtn {
+        display: block;
+        position: relative;
+        height: 110px;
+        color: #ffffff;
+        background: #06980e;
+        font-size: 36px;
+        line-height: 110px;
+        text-align: center;
+        cursor: pointer;
+        border: 3px solid #cccccc;
+      }
+      .filebtn:hover {
+        background: #04bc0d;
+      }
+    </style>
+
+    <script type="text/javascript">
+      if (!String.prototype.padStart)
+        String.prototype.padStart = function (num, str) {
+          if (this.length >= num) return this
+          let temp = this
+          while (temp.length < num) {
+            temp = str + temp
+          }
+          return temp
+        }
+
+      window.onload = function () {
+        var canvas = document.createElement('canvas')
+        var context = canvas.getContext('2d')
+
+        document.getElementById('img').onchange = function () {
+          var img = event.target.files[0]
+
+          // 检查能否读取图片
+          if (!img) return alert('无法读取图片')
+
+          // 检查图片类型
+          if (!(img.type.indexOf('image') == 0 && img.type && /\.(?:jpg|png|gif)$/.test(img.name)))
+            return alert('图片只能是jpg,gif,png')
+
+          // 检查图片尺寸
+          if (img.size > 1920 * 1080) return alert('图片太大, 无法处理')
+
+          // file reader
+          var reader = new FileReader()
+          reader.readAsDataURL(img)
+
+          reader.onload = function (e) {
+            // reader onload start
+
+            var image = new Image()
+            image.src = e.target.result
+
+            image.onload = function () {
+              // image onload start
+
+              var img_width = this.width
+              var img_height = this.height
+
+              // 设置画布尺寸
+              canvas.width = img_width
+              canvas.height = img_height
+
+              // 将图片按像素写入画布
+              context.drawImage(this, 0, 0, img_width, img_height)
+
+              // 读取图片像素信息
+              var imageData = context.getImageData(0, 0, img_width, img_height)
+
+              var arrbox = []
+              console.log(img.size, imageData.data.length)
+              // 生成box-shadow
+              for (var i = 0; i < imageData.data.length; i++) {
+                if (i % 4 === 0) {
+                  // 每四个元素为一个像素数据 r,g,b,alpha
+
+                  var x = ((i / 4) % img_width) + 1 // 横坐标
+                  var y = Math.floor(i / 4 / img_width) + 1 // 纵坐标
+                  var alpha = Math.round((imageData.data[i + 3] / 255) * 100) / 100 // alpha 值
+
+                  if (imageData.data[i + 3] == 255) {
+                    // 没有alpha 值
+                    var hex = gethex(imageData.data[i], imageData.data[i + 1], imageData.data[i + 2])
+                    arrbox.push(x + 'px ' + y + 'px #' + hex)
+                  } else if (alpha > 0) {
+                    // 有alpha 值
+                    var rgba =
+                      imageData.data[i] +
+                      ',' +
+                      imageData.data[i + 1] +
+                      ',' +
+                      imageData.data[i + 2] +
+                      ',' +
+                      alpha
+                    arrbox.push(x + 'px ' + y + 'px rgba(' + rgba + ')')
+                  }
+                }
+              }
+
+              // 图片颜色取反
+              for (var i = 0; i < imageData.data.length; i += 4) {
+                imageData.data[i] = 255 - imageData.data[i]
+                imageData.data[i + 1] = 255 - imageData.data[i + 1]
+                imageData.data[i + 2] = 255 - imageData.data[i + 2]
+              }
+
+              context.putImageData(imageData, 0, 0)
+
+              let dataUrl = canvas.toDataURL()
+              // 下载图片
+              downloadImg(dataUrl)
+              preview.src = dataUrl
+              // console.log(dataUrl);
+            } // image onload end
+          } // reader onload end
+        }
+      }
+
+      // 获取16进制颜色
+      function gethex(r, g, b) {
+        // 取反色
+        r = 255 - r
+        g = 255 - g
+        b = 255 - b
+
+        r = r.toString(16)
+        g = g.toString(16)
+        b = b.toString(16)
+
+        // 补0
+        r = r.padStart(2, '0')
+        g = g.padStart(2, '0')
+        b = b.padStart(2, '0')
+
+        var hex = r + g + b
+
+        // // 简化处理,如 FFEEDD 可以写为 FED
+        // if (r[0] == r[1] && g[0] == g[1] && b[0] == b[1]) {
+        //   hex = r[0] + g[0] + b[0]
+        // }
+
+        return hex
+      }
+
+      function downloadImg(base64) {
+        // IE
+        if (window.navigator.msSaveOrOpenBlob) {
+          var bstr = atob(base64.split(',')[1])
+          var n = bstr.length
+          var u8arr = new Uint8Array(n)
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n)
+          }
+          var blob = new Blob([u8arr])
+          window.navigator.msSaveOrOpenBlob(blob, 'chart-download' + '.' + 'png')
+        } else {
+          const a = document.createElement('a')
+          a.href = base64
+          a.setAttribute('download', img.name.replace('.', '') + ' - 颜色取反')
+          a.click()
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <p>
+      <input type="file" class="file" id="img" /><label class="filebtn" for="img" title="JPG,GIF,PNG"
+        >点击选择图片</label
+      >
+    </p>
+    <img id="preview" style="width: 80%" />
+  </body>
+</html>

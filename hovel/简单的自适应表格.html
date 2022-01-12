@@ -1,0 +1,55 @@
+<html>
+  <style>
+    html {
+      color: #333;
+      font-size: 14px;
+    }
+
+    .table {
+      border: 1px solid #d4d4d4;
+    }
+
+    .table .row {
+      display: flex;
+      border-bottom: 1px solid #d4d4d4;
+    }
+
+    .table .row:last-child {
+      border-bottom: unset;
+    }
+
+    .table .row .col {
+      flex: 6;
+      display: flex;
+      align-items: center;
+    }
+
+    .table .row .col:nth-child(1),
+    .table .row .col:nth-child(3) {
+      background-color: #f6f4f0;
+      flex: 6;
+    }
+
+    .table .row .col div {
+      padding: 4px;
+    }
+  </style>
+  <div class="table">
+    <div class="row">
+      <div class="col"><div>prop</div></div>
+      <div class="col"><div>value</div></div>
+      <div class="col"><div>发动机转速</div></div>
+      <div class="col"><div>3000</div></div>
+    </div>
+    <div class="row">
+      <div class="col"><div>prop</div></div>
+      <div class="col"><div>value</div></div>
+      <div class="col"><div>prop</div></div>
+      <div class="col"><div>long long long long long value</div></div>
+    </div>
+    <div class="row">
+      <div class="col"><div>prop</div></div>
+      <div class="col" style="flex: 18"><div>value</div></div>
+    </div>
+  </div>
+</html>

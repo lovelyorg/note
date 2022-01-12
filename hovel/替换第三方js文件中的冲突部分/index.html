@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    使用 live server 打开页面, 打开 console 查看效果
+    <script>
+      console.log(Map.prototype)
+
+      fetch('/map.js')
+        .then((res) => res.text())
+        .then((text) => document.write(`<script>${text.replace('Map', 'MMap')}<\/script>`))
+        .then(() => {
+          console.log(Map.prototype)
+          console.log(MMap.prototype)
+        })
+    </script>
+  </body>
+</html>

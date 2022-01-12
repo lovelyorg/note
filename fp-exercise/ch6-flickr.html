@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+    <div class="search-container">
+      <input id="keyword" type="text" value="big cat" />
+      <button id="search">search</button>
+      <button id="search2">search fp</button>
+    </div>
+    <div id="imgContainer" class="img-container"></div>
+
+    <script src="./node_modules/requirejs/require.js"></script>
+
+    <script>
+      requirejs.config({
+        paths: {
+          ramda: './node_modules/ramda/dist/ramda.min',
+          jquery: './node_modules/jquery/dist/jquery.min',
+          support: './support/index.browser',
+        },
+      })
+    </script>
+
+    <script>
+      require(['jquery'], function ($) {
+        async function app() {
+          $('#imgContainer').html('')
+          $.get(`http://127.0.0.1:8000/?keyword=${$('#keyword').val()}`, (res) => {
+            res.match(/mediaurl=https((?!https).)*jpg/g).forEach((m) => {
+              let img = $('<img />', { src: m })
+              $('#imgContainer').append(img)
+            })
+          })
+        }
+
+        $('#search').on('click', app)
+      })
+    </script>
+
+    <script>
+      /**
+       * .构造api url
+       * .从api获取数据 (不纯)
+       * .从数据中提取图片链接
+       * .创建图片元素
+       * .图片显示到屏幕 (不纯)
+       */
+      require(['jquery', 'ramda', 'support'], function ($, { curry, compose, map, take }, { IO, Task, trace, chain }) {
+        // el -> el [el] -> _
+        const setHtml = curry((sel, html) => new IO(() => $(sel).append(html)))
+        // string -> Task string error
+        const fetchText = curry(
+          (url) =>
+            new Task((reject, resolve) => {
+              fetch(url)
+                .then((res) => res.text())
+                .then(resolve)
+                .catch(reject)
+            })
+        )
+        // ioToTask :: IO a -> Task () a
+        const ioToTask = (x) => new Task((reject, resolve) => resolve(x.unsafePerformIO()))
+
+        // _ -> string
+        const apiUrl = () => `http://127.0.0.1:8000/?keyword=${$('#keyword').val()}`
+        // string -> [string]
+        const matchImgUrls = (text) => text.match(/mediaurl=https((?!https).)*jpg/g) || []
+        // string -> el
+        const UrlToImg = (url) => $('<img />', { src: decodeURIComponent(url) })
+        // string -> [el]
+        const textToImgs = compose(map(UrlToImg), take(3), matchImgUrls)
+        // el -> IO(_)
+        const render = setHtml($('#imgContainer'))
+        // _ -> task error _
+        const app = compose(chain(ioToTask), map(render), map(textToImgs), fetchText, apiUrl)
+
+        $('#search2').on('click', () => {
+          $('#imgContainer').html('')
+          app().fork(console.error, console.log)
+        })
+      })
+    </script>
+  </body>
+
+  <style>
+    .search-container {
+      display: flex;
+      margin: 10px 0;
+    }
+
+    img {
+      width: 40%;
+      padding: 10px 10px 0 0;
+    }
+
+    .img-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: start;
+    }
+  </style>
+</html>
