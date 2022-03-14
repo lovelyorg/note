@@ -1,0 +1,7 @@
+A.of(id).ap(v) == v
+
+A.of(id) 创建一个 A 的实例 a, 值是 id 函数, A(id)
+.ap(v) 把 v 的值应用到 a 的 id 函数上, 此时 a 的值变成 v 的值
+得到
+a=v
+A.of(id).ap(v) == v
